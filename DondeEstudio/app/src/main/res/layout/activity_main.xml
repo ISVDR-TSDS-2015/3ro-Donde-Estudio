@@ -1,0 +1,68 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context=".MainActivity"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingTop="10dp">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Buscar Instituciones"
+        android:id="@+id/textView" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Categorias"
+        android:id="@+id/textView2"
+        android:layout_gravity="left"
+        android:paddingTop="10dp" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerCategorias"
+        android:spinnerMode="dialog"
+        android:entries="@array/categoria_arrays"
+        android:prompt="@string/categoria"
+        android:padding="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Carreras"
+        android:id="@+id/textView3"
+        android:layout_gravity="left"
+        android:paddingTop="10dp" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerCarreras"
+        android:spinnerMode="dialog"
+        android:entries="@array/carreras_arrays"
+        android:prompt="@string/carreras"
+        android:padding="10dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Buscar"
+        android:id="@+id/button"
+        android:padding="10dp"
+        android:onClick="IrLista"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ver en Mapa"
+        android:id="@+id/button2"
+        android:padding="10dp"
+        android:onClick="IrMapa"/>
+
+</LinearLayout>

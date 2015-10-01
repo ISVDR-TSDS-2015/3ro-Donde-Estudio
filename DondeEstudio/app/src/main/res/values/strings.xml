@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Donde Estudio</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="categoria">Categoria</string>
+    <string-array name="categoria_arrays">
+        <item>Todas</item>
+        <item>Informática</item>
+        <item>Alimentación</item>
+        <item>Ciencias Económicas</item>
+        <item>Ciencias Sociales</item>
+        <item>Agronomía</item>
+    </string-array>
+
+    <string name="carreras">Carreras</string>
+    <string-array name="carreras_arrays">
+        <item>Todas</item>
+        <item>Técnico Sup. en Desarrollo de Software</item>
+        <item>Técnico Sup. en Higiene y Seguridad</item>
+        <item>Técnico Sup. en Gestión de las Organizaciones</item>
+        <item>Perito Seleccionador de Granos</item>
+        <item>Técnico Superior en Molienda de Cereales y Oleaginosas</item>
+    </string-array>
+    <string name="title_activity_map">Mapa de instituciones</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_lista_institutos">Institutos</string>
+</resources>
