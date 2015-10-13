@@ -1,5 +1,6 @@
 package com.javierpintosettlin.dondeestudio;
 
+import android.database.Cursor;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -12,14 +13,23 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private long idCategoria = -1;
+    private long idCarrera = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        idCategoria = getIntent().getLongExtra("idCategoria", -1);
+        idCarrera = getIntent().getLongExtra("idCarrera", -1);
+
         setUpMapIfNeeded();
     }
 
@@ -64,16 +74,30 @@ public class MapsActivity extends FragmentActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.553984, -63.534776)).title("Instituto Superior Villa del Rosario"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.553649, -63.540560)).title("UNVM - Veterinaria"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.551544, -63.538895)).title("ICMA - Magisterio"));
+        ManejadorBase db = new ManejadorBase(this);
+        List<Institucion> listInstituciones = db.getInstituciones(idCategoria, idCarrera);
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        builder.include(new LatLng(-31.553984, -63.534776));
-        builder.include(new LatLng(-31.553649, -63.540560));
-        builder.include(new LatLng(-31.551544, -63.538895));
+        for(int i = 0; i<listInstituciones.size()-1; i++)
+        {
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(Double.parseDouble(listInstituciones.get(i).getGeoLatitud()),
+                    Double.parseDouble(listInstituciones.get(i).getGeoLongitud())))
+                    .title(listInstituciones.get(i).getNombreInstitucion()));
+
+            builder.include(new LatLng(Double.parseDouble(listInstituciones.get(i).getGeoLatitud()),
+                    Double.parseDouble(listInstituciones.get(i).getGeoLongitud())));
+        }
+
+//        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.553984, -63.534776)).title("Instituto Superior Villa del Rosario"));
+//        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.553649, -63.540560)).title("UNVM - Veterinaria"));
+//        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.551544, -63.538895)).title("ICMA - Magisterio"));
+//        builder.include(new LatLng(-31.553984, -63.534776));
+//        builder.include(new LatLng(-31.553649, -63.540560));
+//        builder.include(new LatLng(-31.551544, -63.538895));
+
         LatLngBounds bounds = builder.build();
-        int padding = 50; // offset from edges of the map in pixels
+        int padding = 30; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 300, 400, padding);
         mMap.moveCamera(cu);
     }

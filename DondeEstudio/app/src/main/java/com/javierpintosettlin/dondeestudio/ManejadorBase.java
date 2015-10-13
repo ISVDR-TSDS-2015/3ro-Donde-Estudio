@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Created by Javier on 02/10/2015.
@@ -120,9 +122,65 @@ public class ManejadorBase extends SQLiteOpenHelper {
             return db.rawQuery(selectQuery, null);
         }
 
+        // Getting All Instituciones
+        public List<Institucion> getInstituciones(long idCategoria, long idCarrera) {
+            List<Institucion> listInstitucion = new ArrayList<Institucion>();
+            // Select All Query
+            String selectQuery = "SELECT DISTINCT " + KEY_IDINSTITUCION + ", " +
+                    KEY_NOMBREINSTITUCION + ", " +
+                    KEY_GEOLATITUD + ", " +
+                    KEY_GEOLONGITUD +
+                    " FROM " + TABLE_CARRERA +
+                    " WHERE 1=1";
+            if (idCategoria != -1 )
+                selectQuery = selectQuery + " AND " + KEY_IDCATEGORIA + " = " + idCategoria;
+            if (idCarrera != -1 )
+                selectQuery = selectQuery + " AND " + KEY_IDCARRERA + " = " + idCarrera;
 
+            SQLiteDatabase db = this.getWritableDatabase();
+            Cursor cursor = db.rawQuery(selectQuery, null);
 
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    Institucion institucion = new Institucion();
+                    institucion.setIdInstitucion(Integer.parseInt(cursor.getString(0)));
+                    institucion.setNombreInstitucion(cursor.getString(1));
+                    institucion.setGeoLatitud(cursor.getString(2));
+                    institucion.setGeoLongitud(cursor.getString(3));
 
+                    // Adding persona to list
+                    listInstitucion.add(institucion);
+                } while (cursor.moveToNext());
+            }
+
+            // return lista de personas
+            return listInstitucion;
+        }
+
+    // Getting All Instituciones  Cursor
+    public Cursor getInstitucionesCursor(long idCategoria, long idCarrera) {
+
+        // Select All Query
+        String selectQuery = "SELECT DISTINCT " + KEY_IDINSTITUCION + " _id, " +
+                KEY_NOMBREINSTITUCION + ", " +
+                KEY_GEOLATITUD + ", " +
+                KEY_GEOLONGITUD +
+                " FROM " + TABLE_CARRERA +
+                " WHERE 1=1";
+        if (idCategoria != -1 )
+            selectQuery = selectQuery + " AND " + KEY_IDCATEGORIA + " = " + idCategoria;
+        if (idCarrera != -1 )
+            selectQuery = selectQuery + " AND " + KEY_IDCARRERA + " = " + idCarrera;
+
+        selectQuery = selectQuery + " ORDER BY " + KEY_NOMBREINSTITUCION;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // return lista de instituciones
+        return cursor;
+    }
 
 //
 //        // Getting personas por ID
