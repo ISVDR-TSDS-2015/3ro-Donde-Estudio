@@ -21,6 +21,7 @@ public class MapsActivity extends FragmentActivity {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private long idCategoria = -1;
     private long idCarrera = -1;
+    private long idInstitucion = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +30,7 @@ public class MapsActivity extends FragmentActivity {
 
         idCategoria = getIntent().getLongExtra("idCategoria", -1);
         idCarrera = getIntent().getLongExtra("idCarrera", -1);
+        idInstitucion = getIntent().getLongExtra("idInstitucion", -1);
 
         setUpMapIfNeeded();
     }
@@ -74,20 +76,24 @@ public class MapsActivity extends FragmentActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        ManejadorBase db = new ManejadorBase(this);
-        List<Institucion> listInstituciones = db.getInstituciones(idCategoria, idCarrera);
+        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(-31.553984, -63.534776), 12);
 
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for(int i = 0; i<listInstituciones.size()-1; i++)
-        {
-            mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(Double.parseDouble(listInstituciones.get(i).getGeoLatitud()),
-                    Double.parseDouble(listInstituciones.get(i).getGeoLongitud())))
-                    .title(listInstituciones.get(i).getNombreInstitucion()));
+        if (idInstitucion == -1) {
+            mMap.moveCamera(cu);
 
-            builder.include(new LatLng(Double.parseDouble(listInstituciones.get(i).getGeoLatitud()),
-                    Double.parseDouble(listInstituciones.get(i).getGeoLongitud())));
-        }
+            ManejadorBase db = new ManejadorBase(this);
+            List<Institucion> listInstituciones = db.getInstituciones(idCategoria, idCarrera);
+
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (int i = 0; i < listInstituciones.size(); i++) {
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(Double.parseDouble(listInstituciones.get(i).getGeoLatitud()),
+                                Double.parseDouble(listInstituciones.get(i).getGeoLongitud())))
+                        .title(listInstituciones.get(i).getNombreInstitucion()));
+
+                builder.include(new LatLng(Double.parseDouble(listInstituciones.get(i).getGeoLatitud()),
+                        Double.parseDouble(listInstituciones.get(i).getGeoLongitud())));
+            }
 
 //        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.553984, -63.534776)).title("Instituto Superior Villa del Rosario"));
 //        mMap.addMarker(new MarkerOptions().position(new LatLng(-31.553649, -63.540560)).title("UNVM - Veterinaria"));
@@ -96,9 +102,26 @@ public class MapsActivity extends FragmentActivity {
 //        builder.include(new LatLng(-31.553649, -63.540560));
 //        builder.include(new LatLng(-31.551544, -63.538895));
 
-        LatLngBounds bounds = builder.build();
-        int padding = 30; // offset from edges of the map in pixels
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 300, 400, padding);
-        mMap.moveCamera(cu);
+            if (listInstituciones.size() > 0) {
+                LatLngBounds bounds = builder.build();
+                int padding = 30; // offset from edges of the map in pixels
+                cu = CameraUpdateFactory.newLatLngBounds(bounds, 300, 400, padding);
+                mMap.moveCamera(cu);
+            }
+        }
+        else {
+            ManejadorBase db = new ManejadorBase(this);
+            Institucion institucion = db.getInstitucion(idInstitucion);
+
+            LatLng latLngInstituto = new LatLng(Double.parseDouble(institucion.getGeoLatitud()),
+                    Double.parseDouble(institucion.getGeoLongitud()));
+
+            mMap.addMarker(new MarkerOptions()
+                        .position(latLngInstituto)
+                        .title(institucion.getNombreInstitucion()));
+
+            cu = CameraUpdateFactory.newLatLngZoom(latLngInstituto, 12);
+            mMap.moveCamera(cu);
+        }
     }
 }

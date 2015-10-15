@@ -1,10 +1,13 @@
 package com.javierpintosettlin.dondeestudio;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -48,6 +51,17 @@ public class ListaInstitutosActivity extends ActionBarActivity {
 
         // Asigno el adapter a la ListView
         listView.setAdapter(simpleCursorAdapter);
+
+        // ListView Item Click Listener
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Abrir Mapa con Institucion
+                Intent mapIntent = new Intent(getApplicationContext(), MapsActivity.class);
+                mapIntent.putExtra("idInstitucion", id);
+                startActivity(mapIntent);
+            }
+        });
     }
 
 

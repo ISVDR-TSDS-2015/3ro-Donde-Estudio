@@ -95,13 +95,18 @@ public class ManejadorBase extends SQLiteOpenHelper {
         }
 
         // All categorias Cursor
-        public Cursor getCursorAllCategorias() {
+        public Cursor getCursorCategorias(long idCarrera) {
 
             // Select All Query
             String selectQuery = "SELECT DISTINCT " + KEY_IDCATEGORIA + " _id, " +
                     KEY_NOMBRECATEGORIA +
                     " FROM " + TABLE_CARRERA +
-                    " ORDER BY " + KEY_NOMBRECATEGORIA;
+                    " WHERE 1=1";
+
+            if (idCarrera != -1)
+                selectQuery = selectQuery + " AND " + KEY_IDCARRERA + " = " + idCarrera;
+
+            selectQuery = selectQuery + " ORDER BY " + KEY_NOMBRECATEGORIA;
 
             SQLiteDatabase db = this.getWritableDatabase();
 
@@ -109,13 +114,18 @@ public class ManejadorBase extends SQLiteOpenHelper {
         }
 
         // All Carreras Cursor
-        public Cursor getCursorAllCarreras() {
+        public Cursor getCursorCarreras(long idCategoria) {
 
             // Select All Query
             String selectQuery = "SELECT DISTINCT " + KEY_IDCARRERA + " _id, " +
                     KEY_NOMBRECARRERA +
                     " FROM " + TABLE_CARRERA +
-                    " ORDER BY " + KEY_NOMBRECARRERA ;
+                    " WHERE 1=1";
+
+            if (idCategoria != -1)
+                selectQuery = selectQuery + " AND " + KEY_IDCATEGORIA + " = " + idCategoria;
+
+            selectQuery = selectQuery + " ORDER BY " + KEY_NOMBRECARRERA ;
 
             SQLiteDatabase db = this.getWritableDatabase();
 
@@ -157,6 +167,33 @@ public class ManejadorBase extends SQLiteOpenHelper {
             // return lista de personas
             return listInstitucion;
         }
+
+    // Get Institucion
+    public Institucion getInstitucion(long idInstitucion) {
+        Institucion institucion = new Institucion();
+
+        // Select All Query
+        String selectQuery = "SELECT DISTINCT " + KEY_IDINSTITUCION + ", " +
+                KEY_NOMBREINSTITUCION + ", " +
+                KEY_GEOLATITUD + ", " +
+                KEY_GEOLONGITUD +
+                " FROM " + TABLE_CARRERA +
+                " WHERE " + KEY_IDINSTITUCION + " = " + idInstitucion;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+                institucion.setIdInstitucion(Integer.parseInt(cursor.getString(0)));
+                institucion.setNombreInstitucion(cursor.getString(1));
+                institucion.setGeoLatitud(cursor.getString(2));
+                institucion.setGeoLongitud(cursor.getString(3));
+        }
+
+        // return lista de personas
+        return institucion;
+    }
 
     // Getting All Instituciones  Cursor
     public Cursor getInstitucionesCursor(long idCategoria, long idCarrera) {

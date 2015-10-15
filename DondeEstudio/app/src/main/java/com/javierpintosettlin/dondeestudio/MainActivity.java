@@ -1,11 +1,9 @@
 package com.javierpintosettlin.dondeestudio;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.MergeCursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBarActivity;
@@ -17,6 +15,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.ads.internal.request.StringParcel;
 
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
@@ -26,72 +27,45 @@ import org.ksoap2.transport.HttpTransportSE;
 import java.util.List;
 import java.util.ArrayList;
 
-
 public class MainActivity extends ActionBarActivity {
 
     private static String SOAP_ACTION = "http://tempuri.org/GetAllCarreras";
     private static String NAMESPACE = "http://tempuri.org/";
     private static String METHOD_NAME = "GetAllCarrerasResponse";
     private static String URL = "http://192.168.2.9/DondeEstudio/DondeEstudioWS.asmx?op=GetAllCarreras";
+    Spinner spnCategoria;
+    Spinner spnCarrera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ManejadorBase db = new ManejadorBase(getApplicationContext());
+        spnCategoria = (Spinner) findViewById(R.id.spinnerCategorias);
+        spnCarrera = (Spinner) findViewById(R.id.spinnerCarreras);
 
-        Spinner spinnerCategorias = (Spinner)findViewById(R.id.spinnerCategorias);
-        Spinner spinnerCarreras = (Spinner)findViewById(R.id.spinnerCarreras);
+        cargarSpinnerCategoria(-1);
 
-        //Cargar categorias
-        //Creamos el cursor
-        Cursor cursorAllCategorias = db.getCursorAllCategorias();
-        // Create a MatrixCursor filled with the rows you want to add.
-        MatrixCursor matrixCursorCategoria = new MatrixCursor(new String[] { "_id", "nombre_categoria" });
-        matrixCursorCategoria.addRow(new Object[] { -1, "TODAS" });
-
-        // Merge your existing cursor with the matrixCursor you created.
-        MergeCursor mergeCursorCategoria = new MergeCursor(new Cursor[] { matrixCursorCategoria, cursorAllCategorias });
-
-        //Creamos el adaptador
-        SimpleCursorAdapter adapterCategorias = new SimpleCursorAdapter(getBaseContext(),
-                android.R.layout.simple_spinner_item,
-                mergeCursorCategoria,
-                new String[] {"nombre_categoria"},
-                new int[] {android.R.id.text1});
-        //Añadimos el layout para el menú
-        adapterCategorias.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        //Le indicamos al spinner el adaptador a usar
-        spinnerCategorias.setAdapter(adapterCategorias);
-
-
-        //Cargar Carreras
-        //Creamos el cursor
-        Cursor cursorAllCarreras = db.getCursorAllCarreras();
-        // Create a MatrixCursor filled with the rows you want to add.
-        MatrixCursor matrixCursorCarrera = new MatrixCursor(new String[] { "_id", "nombre_carrera" });
-        matrixCursorCarrera.addRow(new Object[] { -1, "TODAS" });
-
-        // Merge your existing cursor with the matrixCursor you created.
-        MergeCursor mergeCursorCarreras = new MergeCursor(new Cursor[] { matrixCursorCarrera, cursorAllCarreras });
-
-        //Creamos el adaptador
-        SimpleCursorAdapter adapterCarreras = new SimpleCursorAdapter(getBaseContext(),
-                android.R.layout.simple_spinner_item,
-                mergeCursorCarreras,
-                new String[] {"nombre_carrera"},
-                new int[] {android.R.id.text1});
-        //Añadimos el layout para el menú
-        adapterCarreras.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        //Le indicamos al spinner el adaptador a usar
-        spinnerCarreras.setAdapter(adapterCarreras);
-
+        cargarSpinnerCarrera(-1);
 
         TareaAccesoSOAP tareaAccesoSOAP = new TareaAccesoSOAP();
         tareaAccesoSOAP.execute();
+
+        AdapterView.OnItemSelectedListener ListenerCategoria = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                Log.d("idCategoria", String.valueOf(id));
+                cargarSpinnerCarrera(id);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                Log.d("idCategoria", String.valueOf(-1));
+                cargarSpinnerCarrera(-1);
+            }
+        };
+
+        spnCategoria.setOnItemSelectedListener(ListenerCategoria);
     }
 
 
@@ -118,9 +92,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void IrMapa(View view) {
-        Spinner spnCategoria = (Spinner) findViewById(R.id.spinnerCategorias);
-        Spinner spnCarrera = (Spinner) findViewById(R.id.spinnerCarreras);
-
         Intent mapIntent = new Intent(this, MapsActivity.class);
         mapIntent.putExtra("idCategoria", spnCategoria.getSelectedItemId());
         mapIntent.putExtra("idCarrera", spnCarrera.getSelectedItemId());
@@ -128,9 +99,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void IrLista(View view) {
-        Spinner spnCategoria = (Spinner) findViewById(R.id.spinnerCategorias);
-        Spinner spnCarrera = (Spinner) findViewById(R.id.spinnerCarreras);
-
         Intent listIntent = new Intent(this, ListaInstitutosActivity.class);
         listIntent.putExtra("idCategoria", spnCategoria.getSelectedItemId());
         listIntent.putExtra("idCarrera", spnCarrera.getSelectedItemId());
@@ -138,8 +106,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public class TareaAccesoSOAP extends AsyncTask<String, Void, String> {
-
-
         @Override
         protected void onPreExecute() {
             //si quieren abrir un Dialog informando el progreso, va aqui
@@ -181,8 +147,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.d("Carrera: ", listCarreras.get(i).getNombreInstitucion() + ": " + listCarreras.get(i).getNombreCarrera());
                 }
 
-                //mostrarListaEnListView(listKiosco);
-
+                db.close();
                 return resultado_string;
 
             } catch (Exception e) {
@@ -192,62 +157,67 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(String result) {
+            cargarSpinnerCategoria(-1);
 
-            ManejadorBase db = new ManejadorBase(getApplicationContext());
-
-            Spinner spinnerCategorias = (Spinner)findViewById(R.id.spinnerCategorias);
-            Spinner spinnerCarreras = (Spinner)findViewById(R.id.spinnerCarreras);
-
-            //Cargar categorias
-            //Creamos el cursor
-            Cursor cursorAllCategorias = db.getCursorAllCategorias();
-            // Create a MatrixCursor filled with the rows you want to add.
-            MatrixCursor matrixCursorCategoria = new MatrixCursor(new String[] { "_id", "nombre_categoria" });
-            matrixCursorCategoria.addRow(new Object[] { -1, "TODAS" });
-
-            // Merge your existing cursor with the matrixCursor you created.
-            MergeCursor mergeCursorCategoria = new MergeCursor(new Cursor[] { matrixCursorCategoria, cursorAllCategorias });
-
-            //Creamos el adaptador
-            SimpleCursorAdapter adapterCategorias = new SimpleCursorAdapter(getBaseContext(),
-                    android.R.layout.simple_spinner_item,
-                    mergeCursorCategoria,
-                    new String[] {"nombre_categoria"},
-                    new int[] {android.R.id.text1});
-            //Añadimos el layout para el menú
-            adapterCategorias.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-            //Le indicamos al spinner el adaptador a usar
-            spinnerCategorias.setAdapter(adapterCategorias);
-
-
-            //Cargar Carreras
-            //Creamos el cursor
-            Cursor cursorAllCarreras = db.getCursorAllCarreras();
-            // Create a MatrixCursor filled with the rows you want to add.
-            MatrixCursor matrixCursorCarrera = new MatrixCursor(new String[] { "_id", "nombre_carrera" });
-            matrixCursorCarrera.addRow(new Object[] { -1, "TODAS" });
-
-            // Merge your existing cursor with the matrixCursor you created.
-            MergeCursor mergeCursorCarreras = new MergeCursor(new Cursor[] { matrixCursorCarrera, cursorAllCarreras });
-
-            //Creamos el adaptador
-            SimpleCursorAdapter adapterCarreras = new SimpleCursorAdapter(getBaseContext(),
-                    android.R.layout.simple_spinner_item,
-                    mergeCursorCarreras,
-                    new String[] {"nombre_carrera"},
-                    new int[] {android.R.id.text1});
-            //Añadimos el layout para el menú
-            adapterCarreras.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-            //Le indicamos al spinner el adaptador a usar
-            spinnerCarreras.setAdapter(adapterCarreras);
-
-
+            cargarSpinnerCarrera(-1);
 
             TextView txtWebServices = (TextView) findViewById(R.id.txtError);
             txtWebServices.setText(result);
         }
+    }
+
+    public void cargarSpinnerCategoria(long idCarrera) {
+        ManejadorBase db = new ManejadorBase(this);
+
+        //Cargar categorias
+        //Creamos el cursor
+        Cursor cursorAllCategorias = db.getCursorCategorias(idCarrera);
+        // Create a MatrixCursor filled with the rows you want to add.
+        MatrixCursor matrixCursorCategoria = new MatrixCursor(new String[] { "_id", "nombre_categoria" });
+        matrixCursorCategoria.addRow(new Object[] { -1, "TODAS" });
+
+        // Merge your existing cursor with the matrixCursor you created.
+        MergeCursor mergeCursorCategoria = new MergeCursor(new Cursor[] { matrixCursorCategoria, cursorAllCategorias });
+
+        //Creamos el adaptador
+        SimpleCursorAdapter adapterCategorias = new SimpleCursorAdapter(this,
+                android.R.layout.simple_spinner_item,
+                mergeCursorCategoria,
+                new String[] {"nombre_categoria"},
+                new int[] {android.R.id.text1});
+        //Añadimos el layout para el menú
+        adapterCategorias.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        //Le indicamos al spinner el adaptador a usar
+        spnCategoria.setAdapter(adapterCategorias);
+        db.close();
+    }
+
+    public void cargarSpinnerCarrera(long idCategoria){
+        ManejadorBase db = new ManejadorBase(this);
+
+        //Cargar Carreras
+        //Creamos el cursor
+        Cursor cursorAllCarreras = db.getCursorCarreras(idCategoria);
+        // Create a MatrixCursor filled with the rows you want to add.
+        MatrixCursor matrixCursorCarrera = new MatrixCursor(new String[] { "_id", "nombre_carrera" });
+        matrixCursorCarrera.addRow(new Object[] { -1, "TODAS" });
+
+        // Merge your existing cursor with the matrixCursor you created.
+        MergeCursor mergeCursorCarreras = new MergeCursor(new Cursor[] { matrixCursorCarrera, cursorAllCarreras });
+
+        //Creamos el adaptador
+        SimpleCursorAdapter adapterCarreras = new SimpleCursorAdapter(this,
+                android.R.layout.simple_spinner_item,
+                mergeCursorCarreras,
+                new String[] {"nombre_carrera"},
+                new int[] {android.R.id.text1});
+        //Añadimos el layout para el menú
+        adapterCarreras.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        //Le indicamos al spinner el adaptador a usar
+        spnCarrera.setAdapter(adapterCarreras);
+        db.close();
     }
 
     public List<CarrerasWS> RecibirDeSOAP(SoapObject soap) {
@@ -266,19 +236,6 @@ public class MainActivity extends ActionBarActivity {
             carreraWS.setNombreInstitucion(carreraSOAP.getProperty(5).toString());
             carreraWS.setGeolatitud(carreraSOAP.getProperty(6).toString());
             carreraWS.setGeolongitud(carreraSOAP.getProperty(7).toString());
-
-/*
-<CarrerasWS>
-          <Id_Carrera>int</Id_Carrera>
-          <Descripcion_Carrera>string</Descripcion_Carrera>
-          <Id_Categoria>int</Id_Categoria>
-          <Descripcion_Categoria>string</Descripcion_Categoria>
-          <Id_Institucion>int</Id_Institucion>
-          <Descripcion_Institucion>string</Descripcion_Institucion>
-          <Geolatitud>string</Geolatitud>
-          <Geolongitud>string</Geolongitud>
-        </CarrerasWS>
-  */
 
             listCarrera.add(carreraWS);
         }
